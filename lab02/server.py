@@ -1,35 +1,43 @@
 import os
-from re import A
 from time import sleep
 
+# create buffer if not exists
+try:
+    f = open("buffer", "x")
+    f.close()
+except:
+    pass
 
+print("Serwer działa")
 while True:
-    try:
-        with open('buffer', 'r') as buffer:
-            line = buffer.readline()
-            print(line)
+    with open('buffer', 'r+') as buffer:
+        # check if there is answer file path in buffer
+        line = buffer.readline()
+        if len(line.strip()) == 0:
+            sleep(0.5)
+            continue
 
-            if not ("/end" in line):
-                sleep(0.5)
-                continue
+        # print questions
+        lines = buffer.readlines()
+        for l in lines:
+            print(l.strip())
 
-            text = buffer.readlines()
-            filePath = text[0].strip('\n')
+        # clear buffer after reading
+        buffer.seek(0)
+        buffer.truncate()
 
-            for text_line in text:
-                print(text_line)
+        # create answer file
+        a_file = open(line.strip(), "w")
+        print("Napisz '/end' aby zakończyć")
+        while True:
+            print("Wpisz odpowiedź: ")
+            answer = input()
+            a_file.write(answer + "\n")
 
-            while True:
-                with open(filePath, 'w') as a_file:
+            if ("/end" in answer):
+                break
 
-                    print("\n Write answer: ")
-                    answer = input()
-
-                    a_file.write(answer + '\n')
-                    if ('\end' in answer):
-                        break
-
-            os.remove('buffer')
-
-    except FileNotFoundError as e:
-        sleep(0.05)
+        # close file and remove lockFile
+        a_file.close()
+        os.unlink("lockFile")
+        print("koniec, plik zamkowy zlikwidowany")
