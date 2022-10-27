@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import os
-
-
 import sys
-# sys.setdefaultencoding() does not exist, here!
-reload(sys)  # Reload does the trick!
-sys.setdefaultencoding('UTF8')
 
 parser = argparse.ArgumentParser(
     description='Fork searching')
