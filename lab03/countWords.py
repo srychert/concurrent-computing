@@ -29,7 +29,7 @@ def readFile(path):
 
                 files.append(line[start:end])
             else:
-                count += line.count(args.s)
+                count += line.count(" "+ args.s + " ")
 
     return {"files": files, "count": count}
 
