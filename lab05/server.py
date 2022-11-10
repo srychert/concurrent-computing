@@ -46,8 +46,10 @@ while True:
         msg = s.decode()
         print("Serwer: odebrałem %s " % msg)
     except sysv_ipc.Error as e:
-        print(str(e))
-        continue
+        e_msg = str(e)
+        if (e_msg == "Signaled while waiting"):
+            print(e_msg)
+            continue
 
     response = "Nie znam takiego słowa"
 
