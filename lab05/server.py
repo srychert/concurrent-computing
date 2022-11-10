@@ -4,25 +4,7 @@ import signal
 import sys
 import os
 
-print(os.getpid())
-
-
-def handler(signum, frame):
-    print('Obsługa sygnału ', signum)
-
-
-def handler1(signum, frame):
-    print(' Inna obsługa sygnału ', signum)
-    sys.exit(0)
-
-
-# przypisanie obsługi sygnału do SIGINT
-signal.signal(signal.SIGHUP, handler)
-signal.signal(signal.SIGTERM, handler)
-
-
-# przypisanie obsługi sygnału do SIGUSR1
-signal.signal(signal.SIGUSR1, handler1)
+print("Pid programu:", os.getpid())
 
 slownik = {
     "pies": "dog",
@@ -34,21 +16,43 @@ klucz2 = 12
 
 mq = sysv_ipc.MessageQueue(klucz, sysv_ipc.IPC_CREAT)
 mq2 = sysv_ipc.MessageQueue(klucz2, sysv_ipc.IPC_CREAT)
-
-# mq.remove()
-# mq2.remove()
-
 print("kolejka utworzona")
 
+
+def handler(signum, frame):
+    print("Obsługa sygnału", signum)
+
+
+def handler1(signum, frame):
+    print("Inna obsługa sygnału", signum)
+    mq.remove()
+    mq2.remove()
+    print("Kończę program")
+    sys.exit(0)
+
+
+# przypisanie obsługi sygnału do SIGINT
+signal.signal(signal.SIGHUP, handler)
+signal.signal(signal.SIGTERM, handler)
+
+
+# przypisanie obsługi sygnału do SIGUSR1
+signal.signal(signal.SIGUSR1, handler1)
+
 while True:
-    s, t = mq.receive(True, 0)
-    s = s.decode()
-    print("Serwer: odebrałem %s  " % s)
+    msg = ""
+    try:
+        s, t = mq.receive(True, 0)
+        msg = s.decode()
+        print("Serwer: odebrałem %s " % msg)
+    except sysv_ipc.Error as e:
+        print(str(e))
+        continue
 
     response = "Nie znam takiego słowa"
 
-    if s in slownik:
-        response = slownik[s]
+    if msg in slownik:
+        response = slownik[msg]
 
     mq2.send(response.encode(), True)
     print("wysłane")
