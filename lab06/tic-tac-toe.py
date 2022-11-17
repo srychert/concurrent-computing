@@ -1,5 +1,6 @@
 import sysv_ipc
 import time
+from Game import Game
 
 
 klucz = 31
@@ -55,25 +56,31 @@ def czytaj(mem):
     return s
 
 
-def next_player(player):
-    text = " to play\n"
-    next_player = ""
-    if player == "X" or player == " ":
-        next_player = "O"
-    elif player == "O":
-        next_player = "X"
+def get_player(player):
+    if player == "O":
+        return "O"
     else:
-        raise Exception(f"Wrong player type: {player}")
+        return "X"
 
-    return next_player + text
+
+def get_next_player(player):
+    if player == "O":
+        return "X"
+    else:
+        return "O"
 
 
 # Game here
-board = "_|_|_\n"*3
 sem.acquire()
 # time.sleep(3)
+
 odp = czytaj(mem)
-next = next_player(odp[0])
-pisz(mem, next + board)
+player = get_player(odp[0])
+
+game = Game(player, "")
+game.make_move()
+
+pisz(mem, get_next_player(player) + "\n" + game.get_board())
+
 print(czytaj(mem))
 sem.release()
