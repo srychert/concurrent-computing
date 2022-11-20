@@ -1,6 +1,7 @@
 import sysv_ipc
 import time
 from Game import Game
+import re
 
 
 klucz = 31
@@ -70,17 +71,23 @@ def get_next_player(player):
         return "O"
 
 
-# Game here
-sem.acquire()
-# time.sleep(3)
+while True:
+    sem.acquire()
 
-odp = czytaj(mem)
-player = get_player(odp[0])
+    odp = czytaj(mem)
+    player = get_player(odp[0])
 
-game = Game(player, "")
-game.make_move()
+    regex = r"((O|X|_)\|(O|X|_)\|(O|X|_)\n){3}"
+    result = re.search(regex, odp)
 
-pisz(mem, get_next_player(player) + "\n" + game.get_board())
+    board = ""
+    if result is not None:
+        print(odp)
+        board = result.group(0)
 
-print(czytaj(mem))
-sem.release()
+    game = Game(player, board)
+    result = game.make_move()
+
+    pisz(mem, get_next_player(player) + "\n" + game.get_board())
+
+    sem.release()
