@@ -13,10 +13,6 @@ class Game:
 
     def make_move(self):
         moves = [0, 1, 2]
-        # lost = self.check_win("O" if self.player == "X" else "X")
-
-        # if lost is not None:
-        #     return lost
 
         while True:
             move = input("Play a move (x,y): ")
@@ -33,11 +29,18 @@ class Game:
                     raise
 
                 self.board[x][y] = self.player
+
+                tie = self.check_tie()
+                if tie:
+                    return "Tie"
+
                 win = self.check_win(self.player)
-                print(win)
-                return win
+                if win:
+                    return "Win"
+
+                return None
             except:
-                print("Bad move")
+                print("Moved not allowed")
 
     def check_win(self, player):
         for r in self.board:
@@ -57,6 +60,13 @@ class Game:
             return True
 
         return False
+
+    def check_tie(self):
+        for r in self.board:
+            for e in r:
+                if e == "_":
+                    return False
+        return True
 
     def all_same(self, ele, iterator):
         iterator = iter(iterator)
