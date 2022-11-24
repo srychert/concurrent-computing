@@ -17,10 +17,6 @@ def create_sem(key, init_value):
         raise
 
 
-def remove_sem(sem):
-    sem.remove()
-
-
 def create_mem(key):
     try:
         mem = sysv_ipc.SharedMemory(key)
@@ -29,10 +25,6 @@ def create_mem(key):
         if (str(e) == f"No shared memory exists with the key {key}"):
             return sysv_ipc.SharedMemory(klucz, sysv_ipc.IPC_CREX)
         raise
-
-
-def remove_mem(mem):
-    mem.remove()
 
 
 sem = create_sem(klucz, 1)
@@ -71,6 +63,7 @@ def get_next_player(player):
 
 
 while True:
+    print("Waiting for turn")
     sem.acquire()
 
     odp = czytaj(mem)
