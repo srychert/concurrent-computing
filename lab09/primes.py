@@ -4,6 +4,9 @@ import threading
 
 # check, if `k` is prime
 def prime(k):
+    if k == 2:
+        return True
+
     s = math.ceil(math.sqrt(k))
     for i in range(2, s+1):
         if k % i == 0:
@@ -86,3 +89,4 @@ for _ in range(number_of_threads):
 b.wait()
 
 print(primes)
+print(len(primes))
