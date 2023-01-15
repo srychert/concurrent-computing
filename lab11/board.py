@@ -24,8 +24,11 @@ def long_operation_thread(gui_queue):
     :return:
     """
     print("Starting thread")
-    move, adres = UDPSocket.recvfrom(bufSize)
-    gui_queue.put(move.decode())  # put a move into queue for GUI
+    try:
+        move, adres = UDPSocket.recvfrom(bufSize)
+        gui_queue.put(move.decode())  # put a move into queue for GUI
+    except Exception as e:
+        print(str(e))
 
 
 # queue used to communicate between the gui and the threads
@@ -93,6 +96,8 @@ while True:
     if (event != "__TIMEOUT__"):
         print(event, values)
     if event in (None, 'Exit'):
+        UDPSocket.sendto(str.encode(json.dumps(msg(abandon=True))),
+                         opponent_address_port)
         break
 
     # player move
@@ -177,5 +182,9 @@ while True:
             moves_remaining = 2
             time.sleep(1)
             update_gui()
+
+        if move["abandon"]:
+            update_text(title="Game abandoned")
+            update_buttons(disabled=True)
 
 window.close()
