@@ -1,8 +1,9 @@
 import PySimpleGUI as sg
 from colors import get_random_colors
 import socket
-import time
 import json
+import queue
+import threading
 
 
 def connect():
@@ -51,6 +52,19 @@ def connect():
 
     ############################################################
 
+    def recv(gui_queue):
+        while True:
+            try:
+                move, adres = UDPSocket.recvfrom(bufSize)
+                gui_queue.put(move.decode())  # put a move into queue for GUI
+                break
+            except Exception as e:
+                print(str(e))
+                pass
+
+    # queue used to communicate between the gui and the threads
+    gui_queue = queue.Queue()
+
     UDPSocket.sendto(str.encode("start"), opponent_address_port)
 
     # list of randomized pair colors made by player that joined first
@@ -58,10 +72,25 @@ def connect():
     # determines if it is player turn to play
     turn = False
 
+    layout = [[sg.Text('Waiting for other player to join...')],
+              [sg.OK(), sg.Cancel()]]
+
+    window_wait = sg.Window('Waiting', layout)
+
+    threading.Thread(target=recv,
+                     args=(gui_queue,), daemon=True).start()
+
     while True:
+        event, values = window_wait.read(timeout=1000)
+        if event in (None, 'Cancel'):
+            exit()
+
         try:
-            move, adres = UDPSocket.recvfrom(bufSize)
-            move = move.decode()
+            move = gui_queue.get_nowait()
+        except queue.Empty:             # get_nowait() will get exception when Queue is empty
+            move = None              # break from the loop if no more moves are queued up
+
+        if move != None:
             if move == "start":
                 colors = get_random_colors()
                 UDPSocket.sendto(str.encode(json.dumps(colors)),
@@ -71,8 +100,8 @@ def connect():
             else:
                 colors = json.loads(move)
                 break
-        except:
-            time.sleep(1)
+
+    window_wait.close()
 
     return {
         "UDPSocket": UDPSocket,
